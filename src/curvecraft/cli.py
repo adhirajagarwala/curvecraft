@@ -7,30 +7,52 @@ from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
+import pandas as pd
 
 from curvecraft.fitting import (
     DiodeFitResult,
+    MosfetIdVdsFitResult,
     MosfetIdVgsFitResult,
+    RdsonEstimate,
     SqrtIdThresholdEstimate,
     estimate_threshold_by_constant_current,
     estimate_threshold_by_sqrt_id_linear_fit,
+    extract_rdson_for_curve,
     fit_diode_iv,
+    fit_mosfet_id_vds,
     fit_mosfet_id_vgs,
 )
-from curvecraft.io.csv_loader import load_diode_curve_csv, load_mosfet_id_vgs_curve_csv
-from curvecraft.models import diode_current, mosfet_level1_current
+from curvecraft.io.csv_loader import (
+    group_mosfet_id_vds_curves_by_vgs,
+    load_diode_curve_csv,
+    load_mosfet_id_vds_curve_csv,
+    load_mosfet_id_vgs_curve_csv,
+)
+from curvecraft.models import (
+    diode_current,
+    mosfet_level1_current,
+    mosfet_level1_id_vds_current,
+)
 from curvecraft.plotting import (
     plot_iv_linear,
     plot_iv_semilog_y,
+    plot_mosfet_id_vds_family,
+    plot_mosfet_id_vds_measured_vs_fit,
     plot_mosfet_id_vgs_linear,
     plot_mosfet_id_vgs_semilog_y,
 )
-from curvecraft.reports import write_diode_report, write_mosfet_id_vgs_report
+from curvecraft.reports import (
+    write_diode_report,
+    write_mosfet_id_vds_report,
+    write_mosfet_id_vgs_report,
+)
 from curvecraft.spice import (
     NgspiceNotFoundError,
     validate_diode_with_ngspice,
+    validate_mosfet_id_vds_with_ngspice,
     validate_mosfet_id_vgs_with_ngspice,
     write_diode_netlist,
+    write_mosfet_id_vds_netlists,
     write_mosfet_id_vgs_netlist,
 )
 from curvecraft.spice.validation import SpiceValidationResult
@@ -62,6 +84,21 @@ class MosfetIdVgsDemoResult:
     fit_result: MosfetIdVgsFitResult
     sqrt_id_estimate: SqrtIdThresholdEstimate
     constant_current_vth_v: float | None
+    validation_result: SpiceValidationResult | None
+    validation_skipped_reason: str | None
+
+
+@dataclass(frozen=True)
+class MosfetIdVdsDemoResult:
+    """Output paths and status from the M3 MOSFET Id-Vds/Rds_on demo."""
+
+    output_dir: Path
+    family_plot_path: Path
+    fit_plot_path: Path
+    netlist_paths: tuple[Path, ...]
+    report_path: Path
+    fit_result: MosfetIdVdsFitResult
+    rdson_estimates: tuple[RdsonEstimate, ...]
     validation_result: SpiceValidationResult | None
     validation_skipped_reason: str | None
 
@@ -255,6 +292,101 @@ def run_mosfet_id_vgs_demo(
     )
 
 
+def run_mosfet_id_vds_demo(
+    *,
+    data_path: Path | None = None,
+    output_dir: Path | None = None,
+    fixed_vth_v: float | None = None,
+    run_ngspice_if_available: bool = True,
+) -> MosfetIdVdsDemoResult:
+    """Run the full M3 MOSFET Id-Vds/Rds_on workflow on synthetic data."""
+    project_root = Path(__file__).resolve().parents[2]
+    input_csv = (
+        data_path
+        or project_root / "data" / "examples" / "mosfet_id_vds_example.csv"
+    )
+    demo_output = output_dir or project_root / "examples" / "mosfet_id_vds" / "output"
+    demo_output.mkdir(parents=True, exist_ok=True)
+
+    data = load_mosfet_id_vds_curve_csv(input_csv)
+    fit_result = fit_mosfet_id_vds(data, fixed_vth_v=fixed_vth_v)
+    vgs = data["vgs_v"].to_numpy(dtype=float)
+    vds = data["vds_v"].to_numpy(dtype=float)
+    fitted_current = np.asarray(
+        mosfet_level1_id_vds_current(vgs, vds, fit_result.parameters)
+    )
+
+    family_plot = plot_mosfet_id_vds_family(
+        data,
+        demo_output / "mosfet_id_vds_family.png",
+    )
+    fit_plot = plot_mosfet_id_vds_measured_vs_fit(
+        data,
+        fitted_current,
+        demo_output / "mosfet_id_vds_fit.png",
+    )
+
+    curves_by_vgs = group_mosfet_id_vds_curves_by_vgs(data)
+    rdson_estimates = _extract_demo_rdson_estimates(curves_by_vgs)
+    fixed_vgs_values = tuple(float(value) for value in sorted(curves_by_vgs))
+    netlists = write_mosfet_id_vds_netlists(
+        demo_output,
+        fit_result.parameters,
+        fixed_vgs_values_v=fixed_vgs_values,
+        start_v=float(data["vds_v"].min()),
+        stop_v=float(data["vds_v"].max()),
+        step_v=_infer_demo_step(data["vds_v"].to_numpy(dtype=float)),
+    )
+
+    validation_result: SpiceValidationResult | None = None
+    validation_skipped_reason: str | None = None
+    if run_ngspice_if_available and shutil.which("ngspice") is not None:
+        try:
+            validation_result = validate_mosfet_id_vds_with_ngspice(
+                fit_result.parameters,
+                demo_output,
+                fixed_vgs_values_v=fixed_vgs_values,
+                start_v=float(data["vds_v"].min()),
+                stop_v=float(data["vds_v"].max()),
+                step_v=_infer_demo_step(data["vds_v"].to_numpy(dtype=float)),
+                plot_path=demo_output / "mosfet_id_vds_python_vs_ngspice.png",
+            )
+            validation_result.comparison.to_csv(
+                demo_output / "mosfet_id_vds_ngspice_validation_comparison.csv",
+                index=False,
+            )
+        except NgspiceNotFoundError as error:
+            validation_skipped_reason = str(error)
+    else:
+        validation_skipped_reason = (
+            "ngspice is not installed or validation was disabled."
+        )
+
+    report = write_mosfet_id_vds_report(
+        demo_output / "mosfet_m3_id_vds_rdson_report.md",
+        input_csv_path=input_csv,
+        fit_result=fit_result,
+        rdson_estimates=rdson_estimates,
+        plot_paths=[family_plot, fit_plot],
+        spice_netlist_paths=list(netlists),
+        validation_result=validation_result,
+        vds_min_v=float(data["vds_v"].min()),
+        vds_max_v=float(data["vds_v"].max()),
+    )
+
+    return MosfetIdVdsDemoResult(
+        output_dir=demo_output,
+        family_plot_path=family_plot,
+        fit_plot_path=fit_plot,
+        netlist_paths=netlists,
+        report_path=report,
+        fit_result=fit_result,
+        rdson_estimates=rdson_estimates,
+        validation_result=validation_result,
+        validation_skipped_reason=validation_skipped_reason,
+    )
+
+
 def main(argv: list[str] | None = None) -> int:
     """Run the CurveCraft CLI."""
     parser = argparse.ArgumentParser(prog="curvecraft")
@@ -268,6 +400,11 @@ def main(argv: list[str] | None = None) -> int:
     mosfet_parser.add_argument("--output-dir", type=Path, default=None)
     mosfet_parser.add_argument("--fixed-vds", type=float, default=None)
     mosfet_parser.add_argument("--skip-ngspice", action="store_true")
+    mosfet_id_vds_parser = subparsers.add_parser("mosfet-id-vds-demo")
+    mosfet_id_vds_parser.add_argument("--data", type=Path, default=None)
+    mosfet_id_vds_parser.add_argument("--output-dir", type=Path, default=None)
+    mosfet_id_vds_parser.add_argument("--fixed-vth", type=float, default=None)
+    mosfet_id_vds_parser.add_argument("--skip-ngspice", action="store_true")
 
     args = parser.parse_args(argv)
     if args.command == "diode-demo":
@@ -320,6 +457,38 @@ def main(argv: list[str] | None = None) -> int:
             )
         else:
             print("ngspice validation completed.")
+    elif args.command == "mosfet-id-vds-demo":
+        id_vds_result = run_mosfet_id_vds_demo(
+            data_path=args.data,
+            output_dir=args.output_dir,
+            fixed_vth_v=args.fixed_vth,
+            run_ngspice_if_available=not args.skip_ngspice,
+        )
+        print(f"Output directory: {id_vds_result.output_dir}")
+        print(f"Family plot: {id_vds_result.family_plot_path}")
+        print(f"Fit plot: {id_vds_result.fit_plot_path}")
+        for netlist_path in id_vds_result.netlist_paths:
+            print(f"SPICE netlist: {netlist_path}")
+        print(f"Report: {id_vds_result.report_path}")
+        print(
+            "Fitted parameters: "
+            f"Vth={id_vds_result.fit_result.parameters.vth_v:.6g} V, "
+            f"beta={id_vds_result.fit_result.parameters.beta_a_per_v2:.6g} A/V^2, "
+            f"lambda={id_vds_result.fit_result.parameters.lambda_1_per_v:.6g} 1/V"
+        )
+        for estimate in id_vds_result.rdson_estimates:
+            print(
+                "Rds_on: "
+                f"Vgs={estimate.vgs_v:.6g} V, "
+                f"Rds_on={estimate.rds_on_ohm:.6g} ohm"
+            )
+        if id_vds_result.validation_skipped_reason is not None:
+            print(
+                "ngspice validation skipped: "
+                f"{id_vds_result.validation_skipped_reason}"
+            )
+        else:
+            print("ngspice validation completed.")
     return 0
 
 
@@ -332,6 +501,25 @@ def _infer_demo_step(voltage: Iterable[float]) -> float:
         for start, stop in zip(unique_voltage, unique_voltage[1:], strict=False)
         if stop > start
     )
+
+
+def _extract_demo_rdson_estimates(
+    curves_by_vgs: dict[float, pd.DataFrame],
+) -> tuple[RdsonEstimate, ...]:
+    estimates: list[RdsonEstimate] = []
+    for vgs_v, curve in sorted(curves_by_vgs.items()):
+        try:
+            estimates.append(
+                extract_rdson_for_curve(
+                    curve["vds_v"].to_numpy(dtype=float),
+                    curve["id_a"].to_numpy(dtype=float),
+                    low_vds_fraction=0.5,
+                    vgs_v=float(vgs_v),
+                )
+            )
+        except ValueError:
+            continue
+    return tuple(estimates)
 
 
 if __name__ == "__main__":

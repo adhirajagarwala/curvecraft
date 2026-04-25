@@ -4,6 +4,8 @@ from curvecraft.plotting.curves import (
     plot_iv_curve,
     plot_iv_linear,
     plot_iv_semilog_y,
+    plot_mosfet_id_vds_family,
+    plot_mosfet_id_vds_measured_vs_fit,
     plot_mosfet_id_vgs_curve,
     plot_mosfet_id_vgs_linear,
     plot_mosfet_id_vgs_semilog_y,
@@ -17,5 +19,7 @@ __all__ = [
     "plot_mosfet_id_vgs_curve",
     "plot_mosfet_id_vgs_linear",
     "plot_mosfet_id_vgs_semilog_y",
+    "plot_mosfet_id_vds_family",
+    "plot_mosfet_id_vds_measured_vs_fit",
     "plot_python_vs_ngspice",
 ]

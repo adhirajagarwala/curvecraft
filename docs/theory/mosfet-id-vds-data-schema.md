@@ -1,9 +1,8 @@
 # MOSFET Id-Vds CSV Schema
 
-CurveCraft M3 starts MOSFET output-curve support with a plain long/tidy CSV
-schema for n-channel enhancement MOSFET Id-Vds data. Each row is one
-drain-current point measured at a specific gate-source voltage and
-drain-source voltage.
+CurveCraft M3 uses a plain long/tidy CSV schema for n-channel enhancement
+MOSFET Id-Vds output-curve data. Each row is one drain-current point measured
+at a specific gate-source voltage and drain-source voltage.
 
 ## Required Columns
 
@@ -49,9 +48,9 @@ data.
 
 ## M3 Scope
 
-This milestone covers CSV loading for n-channel enhancement MOSFET Id-Vds
-output curves only. It does not add fitting, Rds_on extraction, plotting,
-SPICE validation, reports, or a CLI demo in this issue.
+This schema supports the completed M3 educational Id-Vds/Rds_on workflow:
+loading output curves, fitting the simple Level-1 model, extracting low-Vds
+Rds_on, plotting, generating ngspice validation artifacts, and reporting.
 
 p-channel MOSFET support, BSIM extraction, capacitance, gate charge, switching
 loss, thermal effects, and datasheet image digitization are out of scope.

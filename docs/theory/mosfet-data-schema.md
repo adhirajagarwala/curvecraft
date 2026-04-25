@@ -39,9 +39,13 @@ The MOSFET Id-Vgs CSV loader:
 CurveCraft does not take `abs(id_a)`. Current sign can reflect instrument setup
 or measurement convention, so the loader keeps it exactly as numeric input data.
 
-## M2 Limitations
+## M2 Scope
 
-M2 handles n-channel enhancement MOSFET Id-Vgs transfer-curve CSV data only. It
-does not define an Id-Vds output-curve schema, p-channel schema, YAML metadata,
-datasheet digitization, MOSFET equations, fitting, plotting, SPICE generation,
-or reports.
+This page defines the CSV data schema for n-channel enhancement MOSFET Id-Vgs
+transfer curves only. Other completed M2 modules handle the Level-1 model
+equations, threshold extraction helpers, nonlinear fitting, measured-vs-fit
+plots, ngspice validation, and Markdown reporting.
+
+M2 does not define an Id-Vds output-curve schema. It also does not include
+Rds_on extraction, p-channel MOSFET support, BSIM, capacitance, gate charge,
+switching loss, thermal modeling, or datasheet digitization.

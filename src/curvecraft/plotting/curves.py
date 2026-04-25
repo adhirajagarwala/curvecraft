@@ -9,6 +9,7 @@ matplotlib.use("Agg")
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 
 
 def plot_iv_curve(
@@ -189,3 +190,87 @@ def plot_mosfet_id_vgs_semilog_y(
         output_path,
         semilog_y=True,
     )
+
+
+def plot_mosfet_id_vds_family(
+    data: pd.DataFrame,
+    output_path: str | PathLike[str],
+) -> Path:
+    """Save a MOSFET Id-Vds output-curve family plot grouped by Vgs."""
+    required_columns = {"vgs_v", "vds_v", "id_a"}
+    missing = required_columns.difference(data.columns)
+    if missing:
+        raise ValueError(
+            f"MOSFET Id-Vds plot data missing column(s): {sorted(missing)}"
+        )
+
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    sorted_data = data.loc[:, ["vgs_v", "vds_v", "id_a"]].sort_values(
+        ["vgs_v", "vds_v"],
+        kind="mergesort",
+    )
+
+    fig, ax = plt.subplots(figsize=(6.0, 4.0), constrained_layout=True)
+    for vgs_v, curve in sorted_data.groupby("vgs_v", sort=True):
+        ax.plot(
+            curve["vds_v"].to_numpy(dtype=float),
+            curve["id_a"].to_numpy(dtype=float),
+            "o-",
+            label=f"Vgs={float(vgs_v):.6g} V",
+        )
+
+    ax.set_xlabel("Drain-source voltage Vds (V)")
+    ax.set_ylabel("Drain current Id (A)")
+    ax.grid(True, which="both", alpha=0.3)
+    ax.legend()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+    return path
+
+
+def plot_mosfet_id_vds_measured_vs_fit(
+    measured_data: pd.DataFrame,
+    fitted_id_a: np.ndarray,
+    output_path: str | PathLike[str],
+) -> Path:
+    """Save measured-vs-fitted MOSFET Id-Vds output curves grouped by Vgs."""
+    required_columns = {"vgs_v", "vds_v", "id_a"}
+    missing = required_columns.difference(measured_data.columns)
+    if missing:
+        raise ValueError(
+            f"MOSFET Id-Vds plot data missing column(s): {sorted(missing)}"
+        )
+    fitted = np.asarray(fitted_id_a, dtype=float)
+    if fitted.shape != (len(measured_data),):
+        raise ValueError("fitted_id_a must have one value per measured data row.")
+
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+    plot_data = measured_data.loc[:, ["vgs_v", "vds_v", "id_a"]].copy()
+    plot_data["fitted_id_a"] = fitted
+    plot_data = plot_data.sort_values(["vgs_v", "vds_v"], kind="mergesort")
+
+    fig, ax = plt.subplots(figsize=(6.0, 4.0), constrained_layout=True)
+    for vgs_v, curve in plot_data.groupby("vgs_v", sort=True):
+        label = f"Vgs={float(vgs_v):.6g} V"
+        ax.plot(
+            curve["vds_v"].to_numpy(dtype=float),
+            curve["id_a"].to_numpy(dtype=float),
+            "o",
+            label=f"Measured {label}",
+        )
+        ax.plot(
+            curve["vds_v"].to_numpy(dtype=float),
+            curve["fitted_id_a"].to_numpy(dtype=float),
+            "-",
+            label=f"Fit {label}",
+        )
+
+    ax.set_xlabel("Drain-source voltage Vds (V)")
+    ax.set_ylabel("Drain current Id (A)")
+    ax.grid(True, which="both", alpha=0.3)
+    ax.legend()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+    return path
