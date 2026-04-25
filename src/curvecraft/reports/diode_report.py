@@ -76,6 +76,20 @@ def _render_diode_report(
         f"- Rs: `{parameters.series_resistance_ohm:.6g} ohm`",
         f"- Temperature assumption: `{parameters.temperature_k:.6g} K`",
         "",
+        "## Model Equation",
+        "",
+        "For `Rs = 0`, CurveCraft uses:",
+        "",
+        "```text",
+        "I = Is * (exp(V / (n * Vt)) - 1)",
+        "```",
+        "",
+        "For `Rs > 0`, CurveCraft solves the implicit equation:",
+        "",
+        "```text",
+        "I = Is * (exp((V - I * Rs) / (n * Vt)) - 1)",
+        "```",
+        "",
         "## Fitting Error Metrics",
         "",
         f"- RMSE current: `{fit_result.metrics.rmse_current_a:.6g} A`",
@@ -84,7 +98,7 @@ def _render_diode_report(
             "- Max absolute current error: "
             f"`{fit_result.metrics.max_abs_current_error_a:.6g} A`"
         ),
-        f"- Optimizer status: `{fit_result.message}`",
+        f"- Optimizer status: `{_inline_code(fit_result.message)}`",
         "",
         "## Generated Artifacts",
         "",
@@ -182,3 +196,7 @@ def _relative_path(path: Path, start: Path) -> str:
         return Path(
             __import__("os").path.relpath(path.resolve(), start.resolve())
         ).as_posix()
+
+
+def _inline_code(value: str) -> str:
+    return value.replace("`", "\\`")

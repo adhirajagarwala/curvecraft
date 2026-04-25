@@ -1,0 +1,7 @@
+* CurveCraft diode DC sweep validation
+Vin anode 0 0
+D1 anode 0 curve_diode
+.model curve_diode D (IS=1.09487621767e-10 N=1.69631246129 RS=3.12550959058e-08)
+.dc Vin 0 0.5 0.1
+.print dc v(anode) i(Vin)
+.end

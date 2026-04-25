@@ -1,6 +1,7 @@
 """Diode I-V parameter fitting."""
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 import pandas as pd
@@ -77,7 +78,7 @@ def fit_diode_iv(
         )
         predicted = diode_current(fit_voltage, parameters)
         predicted = np.maximum(predicted, np.finfo(float).tiny)
-        return np.log10(predicted) - log_fit_current
+        return cast(np.ndarray, np.log10(predicted) - log_fit_current)
 
     initial_guess = np.array([-12.0, 1.6, 1.0])
     lower_bounds = np.array([-18.0, 1.0, 0.0])
