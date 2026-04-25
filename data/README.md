@@ -10,5 +10,6 @@ Synthetic data must be clearly labeled as synthetic in the filename, metadata, R
 
 - `examples/diode_basic.csv` is synthetic diode I-V data for loader tests and examples. It is not measured device data and must not be used as validation evidence.
 - `examples/diode_iv_example.csv` is synthetic diode-like I-V data for M1 CSV loader tests and demos. It is not measured device data and must not be used as validation evidence.
+- `examples/mosfet_id_vgs_example.csv` is synthetic n-channel enhancement MOSFET-like Id-Vgs transfer data for M2 CSV loader tests and examples. It is not measured device data and must not be used as validation evidence.
 
 Do not commit private, proprietary, or license-restricted data unless the repository is allowed to contain it.
