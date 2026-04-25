@@ -1,4 +1,4 @@
-"""Plotting utilities for diode I-V curves."""
+"""Plotting utilities for measured-vs-model semiconductor curves."""
 
 from os import PathLike
 from pathlib import Path
@@ -106,4 +106,86 @@ def plot_python_vs_ngspice(
         python_current_a,
         output_path,
         semilog_y=False,
+    )
+
+
+def plot_mosfet_id_vgs_curve(
+    measured_vgs_v: np.ndarray,
+    measured_id_a: np.ndarray,
+    model_id_a: np.ndarray,
+    output_path: str | PathLike[str],
+    *,
+    semilog_y: bool = False,
+) -> Path:
+    """Save a measured-vs-model MOSFET Id-Vgs transfer plot as a PNG file.
+
+    For semilog-y plots, nonpositive drain-current values are masked because a
+    logarithmic y-axis cannot display zero or negative current. The linear plot
+    preserves the measured current sign.
+    """
+    measured_vgs = np.asarray(measured_vgs_v, dtype=float)
+    measured_id = np.asarray(measured_id_a, dtype=float)
+    model_id = np.asarray(model_id_a, dtype=float)
+    path = Path(output_path)
+    path.parent.mkdir(parents=True, exist_ok=True)
+
+    fig, ax = plt.subplots(figsize=(6.0, 4.0), constrained_layout=True)
+    if semilog_y:
+        measured_mask = measured_id > 0
+        model_mask = model_id > 0
+        ax.semilogy(
+            measured_vgs[measured_mask],
+            measured_id[measured_mask],
+            "o",
+            label="Measured",
+        )
+        ax.semilogy(
+            measured_vgs[model_mask],
+            model_id[model_mask],
+            "-",
+            label="Model",
+        )
+        ax.set_ylabel("Drain current Id (A, positive values only)")
+    else:
+        ax.plot(measured_vgs, measured_id, "o", label="Measured")
+        ax.plot(measured_vgs, model_id, "-", label="Model")
+        ax.set_ylabel("Drain current Id (A)")
+
+    ax.set_xlabel("Gate-source voltage Vgs (V)")
+    ax.grid(True, which="both", alpha=0.3)
+    ax.legend()
+    fig.savefig(path, dpi=150)
+    plt.close(fig)
+    return path
+
+
+def plot_mosfet_id_vgs_linear(
+    measured_vgs_v: np.ndarray,
+    measured_id_a: np.ndarray,
+    model_id_a: np.ndarray,
+    output_path: str | PathLike[str],
+) -> Path:
+    """Save a linear-scale measured-vs-model MOSFET Id-Vgs plot."""
+    return plot_mosfet_id_vgs_curve(
+        measured_vgs_v,
+        measured_id_a,
+        model_id_a,
+        output_path,
+        semilog_y=False,
+    )
+
+
+def plot_mosfet_id_vgs_semilog_y(
+    measured_vgs_v: np.ndarray,
+    measured_id_a: np.ndarray,
+    model_id_a: np.ndarray,
+    output_path: str | PathLike[str],
+) -> Path:
+    """Save a semilog-y MOSFET Id-Vgs plot for positive current values."""
+    return plot_mosfet_id_vgs_curve(
+        measured_vgs_v,
+        measured_id_a,
+        model_id_a,
+        output_path,
+        semilog_y=True,
     )

@@ -6,7 +6,11 @@ from pathlib import Path
 import pandas as pd
 from pandas.errors import EmptyDataError
 
-from curvecraft.io.schema import REQUIRED_DIODE_COLUMNS
+from curvecraft.io.schema import (
+    OPTIONAL_MOSFET_ID_VGS_COLUMNS,
+    REQUIRED_DIODE_COLUMNS,
+    REQUIRED_MOSFET_ID_VGS_COLUMNS,
+)
 
 
 def load_diode_curve_csv(path: str | PathLike[str]) -> pd.DataFrame:
@@ -52,6 +56,60 @@ def load_diode_curve_csv(path: str | PathLike[str]) -> pd.DataFrame:
         raise ValueError(f"Diode CSV contains NaN or missing values in: {columns}.")
 
     return clean_data.sort_values("voltage_v", kind="mergesort").reset_index(drop=True)
+
+
+def load_mosfet_id_vgs_curve_csv(path: str | PathLike[str]) -> pd.DataFrame:
+    """Load n-channel enhancement MOSFET Id-Vgs transfer data from a CSV file.
+
+    The returned frame contains required numeric columns ``vgs_v`` and
+    ``id_a``. If the optional ``vds_v`` column is present, it is also returned
+    as numeric data. Current sign is preserved.
+    """
+    csv_path = Path(path)
+    try:
+        data = pd.read_csv(csv_path)
+    except EmptyDataError as error:
+        raise ValueError("MOSFET Id-Vgs CSV is empty.") from error
+
+    missing_columns = [
+        column
+        for column in REQUIRED_MOSFET_ID_VGS_COLUMNS
+        if column not in data.columns
+    ]
+    if missing_columns:
+        missing = ", ".join(missing_columns)
+        required = ", ".join(REQUIRED_MOSFET_ID_VGS_COLUMNS)
+        raise ValueError(
+            f"Missing required MOSFET Id-Vgs CSV column(s): {missing}. "
+            f"Required columns are: {required}."
+        )
+
+    selected_columns = list(REQUIRED_MOSFET_ID_VGS_COLUMNS)
+    selected_columns.extend(
+        column for column in OPTIONAL_MOSFET_ID_VGS_COLUMNS if column in data.columns
+    )
+    clean_data = data.loc[:, selected_columns].copy()
+    if clean_data.empty:
+        raise ValueError("MOSFET Id-Vgs CSV must contain at least one data row.")
+
+    for column in selected_columns:
+        try:
+            clean_data[column] = pd.to_numeric(clean_data[column], errors="raise")
+        except (TypeError, ValueError) as error:
+            raise ValueError(
+                f"Column '{column}' must contain only numeric values."
+            ) from error
+
+    nan_columns = [
+        column for column in selected_columns if clean_data[column].isna().any()
+    ]
+    if nan_columns:
+        columns = ", ".join(nan_columns)
+        raise ValueError(
+            f"MOSFET Id-Vgs CSV contains NaN or missing values in: {columns}."
+        )
+
+    return clean_data.sort_values("vgs_v", kind="mergesort").reset_index(drop=True)
 
 
 def load_curve_csv(path: str | PathLike[str]) -> pd.DataFrame:
