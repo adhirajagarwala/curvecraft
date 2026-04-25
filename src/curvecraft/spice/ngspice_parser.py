@@ -45,6 +45,45 @@ def parse_ngspice_dc_output_file(
     )
 
 
+def parse_mosfet_id_vgs_ngspice_output_text(
+    text: str,
+    *,
+    current_sign: float = -1.0,
+) -> pd.DataFrame:
+    """Parse MOSFET Id-Vgs ngspice DC output into Vgs/Id columns.
+
+    The M2 MOSFET netlist prints ``v(gate)`` and ``i(Vds)``. ngspice reports
+    voltage-source current using its source-current convention, so the default
+    sign converts it to positive n-channel drain current.
+    """
+    rows: list[tuple[float, float]] = []
+    for raw_line in text.splitlines():
+        parts = raw_line.split()
+        if len(parts) < 3:
+            continue
+        values = _parse_numeric_fields(parts)
+        if values is None:
+            continue
+        rows.append((values[-2], current_sign * values[-1]))
+
+    if not rows:
+        raise ValueError("No MOSFET Id-Vgs ngspice DC sweep rows found in output.")
+
+    return pd.DataFrame(rows, columns=["vgs_v", "id_a"])
+
+
+def parse_mosfet_id_vgs_ngspice_output_file(
+    path: str | Path,
+    *,
+    current_sign: float = -1.0,
+) -> pd.DataFrame:
+    """Parse a MOSFET Id-Vgs ngspice DC sweep output file."""
+    return parse_mosfet_id_vgs_ngspice_output_text(
+        Path(path).read_text(encoding="utf-8"),
+        current_sign=current_sign,
+    )
+
+
 def _parse_numeric_fields(parts: list[str]) -> tuple[float, ...] | None:
     try:
         return tuple(float(part) for part in parts)
