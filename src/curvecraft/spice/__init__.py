@@ -15,15 +15,25 @@ from curvecraft.spice.ngspice_runner import (
     NgspiceRunResult,
     run_ngspice,
 )
+from curvecraft.spice.validation import (
+    SpiceValidationMetrics,
+    SpiceValidationResult,
+    validate_diode_against_ngspice_results,
+    validate_diode_with_ngspice,
+)
 
 __all__ = [
     "NgspiceNotFoundError",
     "NgspiceRunError",
     "NgspiceRunResult",
+    "SpiceValidationMetrics",
+    "SpiceValidationResult",
     "diode_dc_sweep_netlist",
     "diode_model_card",
     "parse_ngspice_dc_output_file",
     "parse_ngspice_dc_output_text",
     "run_ngspice",
+    "validate_diode_against_ngspice_results",
+    "validate_diode_with_ngspice",
     "write_diode_netlist",
 ]

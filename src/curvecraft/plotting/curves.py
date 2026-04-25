@@ -91,3 +91,19 @@ def plot_iv_semilog_y(
         output_path,
         semilog_y=True,
     )
+
+
+def plot_python_vs_ngspice(
+    voltage_v: np.ndarray,
+    python_current_a: np.ndarray,
+    ngspice_current_a: np.ndarray,
+    output_path: str | PathLike[str],
+) -> Path:
+    """Save a linear Python-vs-ngspice diode validation plot."""
+    return plot_iv_curve(
+        voltage_v,
+        ngspice_current_a,
+        python_current_a,
+        output_path,
+        semilog_y=False,
+    )
