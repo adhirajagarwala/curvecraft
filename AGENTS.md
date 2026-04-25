@@ -24,6 +24,7 @@ The project owner is an EE student learning semiconductors seriously from fundam
 8. Every user-facing feature must have documentation.
 9. Every model must state what it captures and what it does not capture.
 10. Prefer simple, correct, explainable implementations over clever abstractions.
+11. Do not make the project too complicated. Keep workflows streamlined, write like a human, and implement the best practical approach for the current milestone.
 
 ## Coding standards
 
