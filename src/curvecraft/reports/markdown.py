@@ -1,9 +1,12 @@
-"""Markdown report placeholders."""
+"""Markdown report helpers."""
+
+from os import PathLike
+from pathlib import Path
 
 
-def write_markdown_report() -> None:
-    """Write a Markdown engineering report.
-
-    This is intentionally not implemented in the repository skeleton.
-    """
-    raise NotImplementedError("Report generation is not implemented yet.")
+def write_markdown_report(path: str | PathLike[str], content: str) -> Path:
+    """Write Markdown content to a file and return its path."""
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(content, encoding="utf-8")
+    return output_path

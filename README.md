@@ -50,6 +50,8 @@ ngspice execution is optional. If `ngspice` is not installed, validation runner 
 
 Python-vs-ngspice validation compares CurveCraft's Python diode model with parsed ngspice sweep output for the same parameters and voltage points. This checks implementation consistency, not whether the original CSV data is physically perfect.
 
+M1 can generate a Markdown engineering report from a diode fit, plots, generated SPICE files, and optional ngspice validation metrics. Reports should describe limitations clearly and should not overstate model accuracy.
+
 ## Warning
 
 ngspice validation and report generation are not implemented yet. Do not use this package for engineering decisions until those features are implemented, tested, and documented.
