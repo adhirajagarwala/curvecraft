@@ -25,6 +25,7 @@ The project owner is an EE student learning semiconductors seriously from fundam
 9. Every model must state what it captures and what it does not capture.
 10. Prefer simple, correct, explainable implementations over clever abstractions.
 11. Do not make the project too complicated. Keep workflows streamlined, write like a human, and implement the best practical approach for the current milestone.
+12. After significant progress, if all required checks pass and the work is ready, commit and push the branch to the repository.
 
 ## Coding standards
 
@@ -53,7 +54,7 @@ For every model or fitting method, document:
 
 Milestone M1 is diode I-V fitting and ngspice validation.
 
-Do not implement MOSFET support until M1 is complete.
+M1 is complete. M2 is MOSFET Id-Vgs fitting and validation.
 
 ## Required checks before finishing a task
 
