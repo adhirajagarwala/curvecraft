@@ -110,10 +110,10 @@ def _render_diode_report(
             "## Interpretation",
             "",
             (
-                "This report summarizes a compact diode fit for the provided I-V "
-                "data. The fitted parameters should be interpreted within the "
-                "measured voltage/current range and the fixed-temperature M1 "
-                "assumption."
+                "This report records one compact diode fit for the provided "
+                "I-V data. Read the parameters inside the measured voltage "
+                "and current range, and keep the fixed-temperature M1 "
+                "assumption in mind."
             ),
             "",
             "## Limitations",

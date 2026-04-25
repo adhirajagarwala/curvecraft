@@ -1,10 +1,10 @@
 # Diode Model Theory
 
-CurveCraft M1 uses a compact diode model for diode I-V data. This document describes the equations implemented in `curvecraft.models.diode`.
+CurveCraft M1 uses a compact diode model for DC I-V data. This page is the short version of the physics and the assumptions behind `curvecraft.models.diode`.
 
 ## Thermal Voltage
 
-Thermal voltage is:
+Thermal voltage is the voltage scale set by temperature:
 
 ```text
 Vt = kT / q
@@ -16,7 +16,7 @@ where:
 - `T` is temperature in kelvin
 - `q` is the elementary charge in coulombs
 
-At about 300 K, `Vt` is about 25.85 mV.
+At about 300 K, `Vt` is about 25.85 mV. That small number is why diode current changes so quickly with forward voltage.
 
 ## Shockley Equation
 
@@ -34,13 +34,13 @@ where:
 - `n` is the ideality factor
 - `Vt` is thermal voltage in volts
 
-At reverse bias, this equation approaches `-Is`. At forward bias, current rises exponentially.
+At reverse bias, this equation approaches `-Is`. At forward bias, current rises exponentially. That exponential behavior is the main thing M1 is trying to capture.
 
 ## Ideality Factor
 
 The ideality factor `n` changes the slope of the exponential current. A value near 1 represents diffusion-dominated behavior. Values closer to 2 can appear when recombination or other nonideal effects dominate.
 
-M1 treats `n` as a fitted compact-model parameter. It does not explain every physical mechanism inside a real diode.
+M1 treats `n` as a fitted compact-model parameter. It helps the curve fit real-looking data, but it does not explain every physical mechanism inside a real diode.
 
 ## Saturation Current
 
@@ -58,8 +58,8 @@ I = Is * (exp((V - I * Rs) / (n * Vt)) - 1)
 
 The `I * Rs` term reduces the voltage actually across the diode junction. This matters most at high forward current, where even a small resistance can cause a meaningful voltage drop.
 
-CurveCraft solves this implicit equation numerically for M1. The implementation is intended to be explainable and robust for small engineering datasets, not a replacement for a full production compact-model simulator.
+CurveCraft solves this implicit equation numerically for M1. The implementation is meant to be easy to inspect and good enough for small engineering datasets. It is not trying to replace a production compact-model simulator.
 
 ## M1 Limitations
 
-This model does not include capacitance, breakdown, self-heating, temperature-dependent parameter extraction, or high-injection effects. M1 includes ngspice netlist generation and validation only for checking implementation consistency of this compact model.
+This model does not include capacitance, breakdown, self-heating, temperature-dependent parameter extraction, or high-injection effects. M1 uses ngspice validation to check implementation consistency, not to prove that the model is physically complete.

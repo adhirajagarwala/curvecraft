@@ -1,6 +1,6 @@
 # Basic Diode Example
 
-This example runs the M1 diode workflow on the bundled synthetic CSV data.
+This example runs the M1 diode workflow on the bundled synthetic CSV data. It is meant to show the plumbing working end to end: load data, fit the diode model, make plots, write a SPICE netlist, optionally run ngspice, and generate a report.
 
 Run from the repository root:
 
@@ -17,4 +17,4 @@ The command writes outputs to `examples/diode_basic/output/`:
 - `ngspice_validation_comparison.csv` when ngspice validation runs
 - `diode_m1_fit_report.md`
 
-The input data is synthetic and is for demonstration only.
+The input data is synthetic. Treat it as a demo, not as evidence about a real diode.
