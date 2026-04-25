@@ -26,6 +26,9 @@ dev = [
   "ruff",
 ]
 
+[project.scripts]
+curvecraft = "curvecraft.cli:main"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/curvecraft"]
 
