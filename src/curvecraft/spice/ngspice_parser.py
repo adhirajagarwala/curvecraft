@@ -84,6 +84,48 @@ def parse_mosfet_id_vgs_ngspice_output_file(
     )
 
 
+def parse_mosfet_id_vds_ngspice_output_text(
+    text: str,
+    *,
+    fixed_vgs_v: float,
+    current_sign: float = -1.0,
+) -> pd.DataFrame:
+    """Parse one MOSFET Id-Vds ngspice DC output into Vgs/Vds/Id columns.
+
+    The M3 Id-Vds netlist prints ``v(drain)`` and ``i(Vds)`` while holding
+    ``Vgs`` fixed. The default sign converts ngspice's voltage-source current
+    convention to positive n-channel drain current.
+    """
+    rows: list[tuple[float, float, float]] = []
+    for raw_line in text.splitlines():
+        parts = raw_line.split()
+        if len(parts) < 3:
+            continue
+        values = _parse_numeric_fields(parts)
+        if values is None:
+            continue
+        rows.append((float(fixed_vgs_v), values[-2], current_sign * values[-1]))
+
+    if not rows:
+        raise ValueError("No MOSFET Id-Vds ngspice DC sweep rows found in output.")
+
+    return pd.DataFrame(rows, columns=["vgs_v", "vds_v", "id_a"])
+
+
+def parse_mosfet_id_vds_ngspice_output_file(
+    path: str | Path,
+    *,
+    fixed_vgs_v: float,
+    current_sign: float = -1.0,
+) -> pd.DataFrame:
+    """Parse one MOSFET Id-Vds ngspice DC sweep output file."""
+    return parse_mosfet_id_vds_ngspice_output_text(
+        Path(path).read_text(encoding="utf-8"),
+        fixed_vgs_v=fixed_vgs_v,
+        current_sign=current_sign,
+    )
+
+
 def _parse_numeric_fields(parts: list[str]) -> tuple[float, ...] | None:
     try:
         return tuple(float(part) for part in parts)
