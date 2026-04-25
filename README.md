@@ -52,6 +52,14 @@ Python-vs-ngspice validation compares CurveCraft's Python diode model with parse
 
 M1 can generate a Markdown engineering report from a diode fit, plots, generated SPICE files, and optional ngspice validation metrics. Reports should describe limitations clearly and should not overstate model accuracy.
 
+Run the bundled synthetic M1 demo from the repository root:
+
+```bash
+python -m curvecraft.cli diode-demo
+```
+
+The demo writes plots, an ngspice netlist, optional ngspice validation files, and a Markdown report to `examples/diode_basic/output/`. If ngspice is unavailable, the validation step is skipped clearly.
+
 ## Warning
 
 ngspice validation and report generation are not implemented yet. Do not use this package for engineering decisions until those features are implemented, tested, and documented.
