@@ -46,6 +46,8 @@ Generated plots are not committed as final results unless they come from documen
 
 M1 also includes deterministic ngspice diode netlist generation for fitted `Is`, `n`, and `Rs` parameters. Netlist generation does not run ngspice by itself.
 
+ngspice execution is optional. If `ngspice` is not installed, validation runner tests and demos skip that step clearly instead of pretending simulation happened.
+
 ## Warning
 
 ngspice validation and report generation are not implemented yet. Do not use this package for engineering decisions until those features are implemented, tested, and documented.
