@@ -44,6 +44,8 @@ examples/diode_basic/output/
 
 Generated plots are not committed as final results unless they come from documented input data and reproducible commands.
 
+M1 also includes deterministic ngspice diode netlist generation for fitted `Is`, `n`, and `Rs` parameters. Netlist generation does not run ngspice by itself.
+
 ## Warning
 
 ngspice validation and report generation are not implemented yet. Do not use this package for engineering decisions until those features are implemented, tested, and documented.
