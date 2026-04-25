@@ -6,9 +6,9 @@ CurveCraft is a Python package for fitting compact semiconductor models from cur
 
 This repository is at the initial skeleton stage. The package layout, documentation placeholders, and import test exist, but modeling and fitting behavior are not implemented yet.
 
-## First Milestone
+## Current Milestone
 
-M1 focuses only on diode I-V fitting and ngspice validation.
+M1 focuses on diode I-V CSV loading, diode compact-model fitting, ngspice netlist generation, ngspice validation, plots, and a Markdown report.
 
 Planned M1 work includes:
 
@@ -16,7 +16,8 @@ Planned M1 work includes:
 - Fitting a compact diode model with clear equations, units, and assumptions.
 - Writing ngspice netlists for validation.
 - Comparing fitted model results against source curves.
-- Producing simple engineering reports.
+- Plotting measured and simulated curves.
+- Producing simple Markdown engineering reports.
 
 MOSFET support is intentionally out of scope until diode M1 is complete.
 
@@ -33,6 +34,16 @@ pytest
 ruff check .
 ```
 
+## M1 Demo Outputs
+
+M1 plotting utilities save PNG files for measured-vs-model diode I-V curves. Example scripts should write generated plots under an output folder such as:
+
+```text
+examples/diode_basic/output/
+```
+
+Generated plots are not committed as final results unless they come from documented input data and reproducible commands.
+
 ## Warning
 
-Modeling, fitting, plotting, ngspice validation, and report generation are not implemented yet. Do not use this package for engineering decisions until those features are implemented, tested, and documented.
+ngspice validation and report generation are not implemented yet. Do not use this package for engineering decisions until those features are implemented, tested, and documented.
