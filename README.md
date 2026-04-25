@@ -48,6 +48,8 @@ M1 also includes deterministic ngspice diode netlist generation for fitted `Is`,
 
 ngspice execution is optional. If `ngspice` is not installed, validation runner tests and demos skip that step clearly instead of pretending simulation happened.
 
+Python-vs-ngspice validation compares CurveCraft's Python diode model with parsed ngspice sweep output for the same parameters and voltage points. This checks implementation consistency, not whether the original CSV data is physically perfect.
+
 ## Warning
 
 ngspice validation and report generation are not implemented yet. Do not use this package for engineering decisions until those features are implemented, tested, and documented.

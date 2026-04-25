@@ -33,4 +33,8 @@ The current reported as `i(Vin)` follows ngspice's voltage-source current conven
 
 ## M1 Limitations
 
-Issue 6 only generates netlist text. It does not run ngspice, parse ngspice output, compare Python and ngspice currents, or generate final reports.
+CurveCraft can compare parsed ngspice sweep output with the Python diode model evaluated at the same voltages. This validates that the generated SPICE model behaves like the fitted Python model for the chosen sweep.
+
+This still does not prove the original CSV data is perfect. Mismatch can come from parameter mapping, current sign convention, sweep setup, numerical settings, or model assumptions.
+
+M1 validation does not generate final engineering reports; report generation is a separate step.
