@@ -62,4 +62,4 @@ CurveCraft solves this implicit equation numerically for M1. The implementation 
 
 ## M1 Limitations
 
-This model does not include capacitance, breakdown, self-heating, temperature-dependent parameter extraction, high-injection effects, or SPICE netlist generation. Those are outside the current issue.
+This model does not include capacitance, breakdown, self-heating, temperature-dependent parameter extraction, or high-injection effects. M1 includes ngspice netlist generation and validation only for checking implementation consistency of this compact model.

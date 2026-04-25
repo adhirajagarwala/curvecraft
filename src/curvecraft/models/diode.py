@@ -1,6 +1,7 @@
 """Diode compact model equations."""
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 from scipy.optimize import brentq
@@ -85,7 +86,9 @@ def _solve_current_with_series_resistance(
 
     def residual(current_a: float) -> float:
         exponent = (voltage_v - current_a * series_resistance) / vt_scaled
-        diode_rhs = saturation_current * np.expm1(np.clip(exponent, -745.0, 700.0))
+        diode_rhs = float(
+            saturation_current * np.expm1(np.clip(exponent, -745.0, 700.0))
+        )
         return current_a - diode_rhs
 
     if voltage_v <= 0:
@@ -101,4 +104,5 @@ def _solve_current_with_series_resistance(
         upper *= 2.0
         upper_residual = residual(upper)
 
-    return float(brentq(residual, lower, upper, xtol=1e-14, rtol=1e-12, maxiter=100))
+    solution = brentq(residual, lower, upper, xtol=1e-14, rtol=1e-12, maxiter=100)
+    return cast(float, solution)

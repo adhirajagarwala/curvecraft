@@ -4,7 +4,7 @@ CurveCraft is a Python package for fitting compact semiconductor models from cur
 
 ## Current Status
 
-This repository is at the initial skeleton stage. The package layout, documentation placeholders, and import test exist, but modeling and fitting behavior are not implemented yet.
+Milestone 1 is complete and verified against the bundled synthetic diode example as of 2026-04-25. CurveCraft can load diode I-V CSV data, fit the M1 Shockley-plus-series-resistance model, generate plots, export an ngspice netlist, run ngspice when installed, compare Python and ngspice currents, and write a Markdown engineering report.
 
 ## Current Milestone
 
@@ -60,6 +60,18 @@ python -m curvecraft.cli diode-demo
 
 The demo writes plots, an ngspice netlist, optional ngspice validation files, and a Markdown report to `examples/diode_basic/output/`. If ngspice is unavailable, the validation step is skipped clearly.
 
+The verified M1 run for `data/examples/diode_basic.csv` writes reproducible artifacts under `docs/reports/m1_diode_basic/`:
+
+```bash
+python -m curvecraft.cli diode-demo \
+  --data data/examples/diode_basic.csv \
+  --output-dir docs/reports/m1_diode_basic
+```
+
+## Next Milestone
+
+The next milestone should start only after M1 cleanup is reviewed. Good candidates are improving real-data provenance workflows, adding better fit diagnostics, or planning datasheet curve extraction as a separate scope. MOSFET support remains out of scope until it is explicitly planned.
+
 ## Warning
 
-ngspice validation and report generation are not implemented yet. Do not use this package for engineering decisions until those features are implemented, tested, and documented.
+CurveCraft M1 is still an educational compact-modeling tool. Do not use fitted parameters for engineering decisions without checking data provenance, measurement conditions, model validity range, and independent validation.
