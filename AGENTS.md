@@ -1,66 +1,57 @@
 # AGENTS.md
 
-## Project
+## Project Identity
 
-This repository is CurveCraft: a software-based semiconductor modeling project.
+CurveCraft is a semiconductor compact-model fitting and ngspice validation toolkit. The current completed scope should be diode M1, MOSFET Id-Vgs M2, and MOSFET Id-Vds/Rds_on M3.
 
-CurveCraft fits compact semiconductor device models from curve data, validates generated models using ngspice, and produces engineering-readable reports.
+The repository should show clean EE learning through tested Python modules, plots, reports, examples, and engineering logs. Keep the public story technically honest: distinguish measured/source data, fitted Python models, and ngspice validation.
 
-The first target is diode I-V fitting. Later targets include MOSFET fitting, datasheet curve extraction, and power-device modeling.
+## Programming Habits
 
-## User background
+- Make minimal, focused changes and preserve existing passing behavior.
+- Prefer small modules with clear responsibilities.
+- Use explicit unit-bearing variable names such as `vgs_v`, `id_a`, `vds_v`, `vth_v`, and `beta_a_per_v2`.
+- Use dataclasses or typed result objects for fitting and validation results.
+- Keep IO, compact models, fitting, SPICE generation, plotting, report generation, and CLI/demo code separated.
+- Add or update tests for behavior changes.
+- Run the relevant repo-standard test, lint, and type-check commands before claiming completion.
+- Keep generated artifacts out of source control unless the repo intentionally tracks example reports, plots, or demo outputs.
+- Write clear errors for invalid data rather than silently coercing questionable data.
+- Keep docs technically honest and scoped to what the code actually does.
 
-The project owner is an EE student learning semiconductors seriously from fundamentals. Do not hide physics assumptions. Explain them in docs when relevant.
+## Python Quality Expectations
 
-## Core rules
+- Use NumPy, pandas, and SciPy idiomatically where they fit the task.
+- Avoid hidden global state.
+- Avoid broad bare `except` blocks.
+- Avoid hardcoded absolute paths.
+- Avoid silently taking `abs(current)`.
+- Avoid overfitting tests to implementation details.
+- Avoid excessive class hierarchies unless clearly justified.
+- Avoid untested CLI code.
+- Keep functions reasonably small and testable.
+- Use type hints where practical.
+- Keep ruff, mypy, and pytest passing according to existing repo standards.
 
-1. Do not assume missing requirements.
-2. If a decision is not specified, choose the smallest reversible implementation and document it.
-3. Do not fake experimental, simulation, or benchmark results.
-4. Do not invent datasheet data.
-5. If using synthetic data, label it clearly as synthetic.
-6. If using real data, include provenance in `data/README.md`.
-7. Every implemented feature must have tests.
-8. Every user-facing feature must have documentation.
-9. Every model must state what it captures and what it does not capture.
-10. Prefer simple, correct, explainable implementations over clever abstractions.
-11. Do not make the project too complicated. Keep workflows streamlined, write like a human, and implement the best practical approach for the current milestone.
-12. After significant progress, if all required checks pass and the work is ready, commit and push the branch to the repository.
+## Semiconductor and EE Correctness Habits
 
-## Coding standards
+- Do not overstate compact-model accuracy.
+- Always distinguish measured/source data, fitted Python model output, and ngspice validation output.
+- State that ngspice validation checks implementation consistency, not real-world device truth.
+- Explain that threshold voltage is extraction-method-dependent, not a magical hard turn-on voltage.
+- Explain that Level-1/square-law MOSFET modeling is simplified and not BSIM.
+- Preserve current sign conventions and document assumptions.
+- Document fixed-temperature and fixed-`vds_v` assumptions where relevant.
+- Do not pretend `beta_a_per_v2` is a direct process parameter when using normalized W/L.
 
-- Use Python 3.11+.
-- Use a `src/` package layout.
-- Use type hints for public functions.
-- Use `pytest` for tests.
-- Use `ruff` for linting.
-- Keep functions small and testable.
-- Avoid unnecessary dependencies.
-- Do not add web frameworks unless explicitly requested.
+## Scope Boundaries
 
-## Scientific standards
-
-For every model or fitting method, document:
-
-- equation used
-- parameters
-- units
-- assumptions
-- valid operating region
-- failure modes
-- error metric
-
-## Current milestone
-
-Milestone M1 is diode I-V fitting and ngspice validation.
-
-M1 is complete. M2 is MOSFET Id-Vgs fitting and validation.
-
-## Required checks before finishing a task
-
-Run:
-
-```bash
-pytest
-ruff check .
-```
+- Keep MOSFET Id-Vds/Rds_on work scoped to the completed M3 educational workflow unless explicitly asked to expand it.
+- Do not add pMOS support until explicitly asked.
+- Do not add BSIM support until explicitly asked.
+- Do not add capacitance, gate charge, switching loss, or thermal models until explicitly asked.
+- Do not add datasheet image digitization until explicitly asked.
+- Do not add Docker or GitHub Actions unless explicitly asked or already part of a current issue.
+- Do not start pdk-cartographer or other roadmap projects inside this repository.
+- Do not make generic tutorial-style changes.
+- Do not rewrite working M1 diode modules unnecessarily.

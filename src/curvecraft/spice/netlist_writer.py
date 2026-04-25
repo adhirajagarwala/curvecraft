@@ -155,9 +155,114 @@ def write_mosfet_id_vgs_netlist(
     return output_path
 
 
+def mosfet_id_vds_dc_sweep_netlist(
+    parameters: MosfetLevel1Parameters,
+    *,
+    fixed_vgs_v: float,
+    model_name: str = "curve_nmos",
+    gate_source_name: str = "Vgs",
+    drain_source_name: str = "Vds",
+    mosfet_name: str = "M1",
+    start_v: float = 0.0,
+    stop_v: float = 5.0,
+    step_v: float = 0.05,
+) -> str:
+    """Return an ngspice DC sweep netlist for one NMOS Id-Vds curve.
+
+    M3 keeps the M2 normalized LEVEL=1 mapping: ``VTO = vth_v``,
+    ``KP = beta_a_per_v2``, ``LAMBDA = lambda_1_per_v``, and the MOSFET
+    instance uses ``W/L = 1``. This validates implementation consistency, not
+    physical geometry extraction.
+    """
+    if step_v <= 0:
+        raise ValueError("step_v must be positive.")
+    if stop_v <= start_v:
+        raise ValueError("stop_v must be greater than start_v.")
+    if fixed_vgs_v < 0:
+        raise ValueError("fixed_vgs_v must be nonnegative.")
+
+    lines = [
+        "* CurveCraft MOSFET Id-Vds DC sweep validation",
+        f"{drain_source_name} drain 0 0",
+        f"{gate_source_name} gate 0 {_format_spice_number(fixed_vgs_v)}",
+        f"{mosfet_name} drain gate 0 0 {model_name} W=1 L=1",
+        mosfet_level1_model_card(parameters, model_name=model_name),
+        (
+            f".dc {drain_source_name} {_format_spice_number(start_v)} "
+            f"{_format_spice_number(stop_v)} {_format_spice_number(step_v)}"
+        ),
+        f".print dc v(drain) i({drain_source_name})",
+        ".end",
+        "",
+    ]
+    return "\n".join(lines)
+
+
+def write_mosfet_id_vds_netlist(
+    path: str | PathLike[str],
+    parameters: MosfetLevel1Parameters,
+    *,
+    fixed_vgs_v: float,
+    model_name: str = "curve_nmos",
+    start_v: float = 0.0,
+    stop_v: float = 5.0,
+    step_v: float = 0.05,
+) -> Path:
+    """Write one MOSFET Id-Vds DC sweep netlist and return the output path."""
+    output_path = Path(path)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    netlist = mosfet_id_vds_dc_sweep_netlist(
+        parameters,
+        fixed_vgs_v=fixed_vgs_v,
+        model_name=model_name,
+        start_v=start_v,
+        stop_v=stop_v,
+        step_v=step_v,
+    )
+    output_path.write_text(netlist, encoding="utf-8")
+    return output_path
+
+
+def write_mosfet_id_vds_netlists(
+    output_dir: str | PathLike[str],
+    parameters: MosfetLevel1Parameters,
+    *,
+    fixed_vgs_values_v: list[float] | tuple[float, ...],
+    model_name: str = "curve_nmos",
+    start_v: float = 0.0,
+    stop_v: float = 5.0,
+    step_v: float = 0.05,
+) -> tuple[Path, ...]:
+    """Write one deterministic Id-Vds netlist per fixed Vgs value."""
+    if not fixed_vgs_values_v:
+        raise ValueError("fixed_vgs_values_v must contain at least one value.")
+    output_path = Path(output_dir)
+    output_path.mkdir(parents=True, exist_ok=True)
+    paths: list[Path] = []
+    for index, fixed_vgs_v in enumerate(fixed_vgs_values_v):
+        formatted_vgs = _format_filename_number(fixed_vgs_v)
+        filename = f"mosfet_id_vds_vgs_{index}_{formatted_vgs}.cir"
+        paths.append(
+            write_mosfet_id_vds_netlist(
+                output_path / filename,
+                parameters,
+                fixed_vgs_v=float(fixed_vgs_v),
+                model_name=model_name,
+                start_v=start_v,
+                stop_v=stop_v,
+                step_v=step_v,
+            )
+        )
+    return tuple(paths)
+
+
 def _format_spice_number(value: float) -> str:
     """Format numbers deterministically for snapshot-friendly netlists."""
     formatted = f"{value:.12g}"
     if formatted == "-0":
         return "0"
     return formatted
+
+
+def _format_filename_number(value: float) -> str:
+    return _format_spice_number(value).replace("-", "neg").replace(".", "p")

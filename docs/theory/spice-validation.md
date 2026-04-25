@@ -86,3 +86,32 @@ The M2 validation circuit is intentionally plain:
 
 As with the diode validation, ngspice's voltage-source current convention is
 handled explicitly when parsing the output.
+
+## M3 MOSFET Id-Vds Netlist Generation
+
+CurveCraft M3 can generate deterministic ngspice LEVEL=1 NMOS netlist text for
+Id-Vds output-curve validation, run ngspice when it is installed, parse the
+output, compare Python and ngspice currents, and include the metrics in the M3
+report.
+
+The Id-Vds validation setup is:
+
+- `Vgs`, a fixed gate-source voltage source from gate to ground
+- `Vds`, a drain-source voltage source from drain to ground
+- `M1`, an NMOS with drain at `drain`, gate at `gate`, source/body at ground
+- a `.dc` sweep over `Vds`
+- a `.print` line for `v(drain)` and `i(Vds)`
+
+For curve families, CurveCraft writes one netlist per fixed `Vgs` value. This
+keeps the later parser path simple and makes each validation artifact explicit.
+
+The parameter mapping stays the same normalized convention as M2:
+
+```spice
+M1 drain gate 0 0 curve_nmos W=1 L=1
+.model curve_nmos NMOS (LEVEL=1 VTO=<vth_v> KP=<beta_a_per_v2> LAMBDA=<lambda_1_per_v>)
+```
+
+The normalized `W=1` and `L=1` mapping means `beta_a_per_v2` maps directly to
+`KP` for implementation validation. It is an effective fitted parameter, not
+physical geometry extraction.

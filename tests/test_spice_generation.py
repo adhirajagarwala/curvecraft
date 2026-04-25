@@ -2,9 +2,12 @@ from curvecraft.models import DiodeParameters, MosfetLevel1Parameters
 from curvecraft.spice import (
     diode_dc_sweep_netlist,
     diode_model_card,
+    mosfet_id_vds_dc_sweep_netlist,
     mosfet_id_vgs_dc_sweep_netlist,
     mosfet_level1_model_card,
     write_diode_netlist,
+    write_mosfet_id_vds_netlist,
+    write_mosfet_id_vds_netlists,
     write_mosfet_id_vgs_netlist,
 )
 
@@ -132,3 +135,69 @@ def test_write_mosfet_id_vgs_netlist_creates_file(tmp_path) -> None:  # type: ig
     assert path.read_text(encoding="utf-8").startswith(
         "* CurveCraft MOSFET Id-Vgs DC sweep validation"
     )
+
+
+def test_mosfet_id_vds_dc_sweep_netlist_contains_expected_lines() -> None:
+    parameters = MosfetLevel1Parameters(
+        vth_v=1.2,
+        beta_a_per_v2=0.002,
+        lambda_1_per_v=0.03,
+    )
+
+    netlist = mosfet_id_vds_dc_sweep_netlist(
+        parameters,
+        fixed_vgs_v=4.5,
+        start_v=0.0,
+        stop_v=5.0,
+        step_v=0.1,
+    )
+
+    assert "* CurveCraft MOSFET Id-Vds DC sweep validation" in netlist
+    assert "Vds drain 0 0" in netlist
+    assert "Vgs gate 0 4.5" in netlist
+    assert "M1 drain gate 0 0 curve_nmos W=1 L=1" in netlist
+    assert ".model curve_nmos NMOS (LEVEL=1 VTO=1.2 KP=0.002 LAMBDA=0.03)" in netlist
+    assert ".dc Vds 0 5 0.1" in netlist
+    assert ".print dc v(drain) i(Vds)" in netlist
+    assert netlist.endswith(".end\n")
+
+
+def test_mosfet_id_vds_netlist_holds_gate_fixed_and_sweeps_vds() -> None:
+    parameters = MosfetLevel1Parameters(vth_v=1.0, beta_a_per_v2=0.001)
+
+    netlist = mosfet_id_vds_dc_sweep_netlist(parameters, fixed_vgs_v=3.3)
+
+    assert "Vgs gate 0 3.3" in netlist
+    assert ".dc Vds" in netlist
+    assert ".dc Vgs" not in netlist
+
+
+def test_write_mosfet_id_vds_netlist_creates_file(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    parameters = MosfetLevel1Parameters(vth_v=1.0, beta_a_per_v2=0.001)
+    path = tmp_path / "mosfet_id_vds_validation.cir"
+
+    result = write_mosfet_id_vds_netlist(
+        path,
+        parameters,
+        fixed_vgs_v=3.0,
+    )
+
+    assert result == path
+    assert path.read_text(encoding="utf-8").startswith(
+        "* CurveCraft MOSFET Id-Vds DC sweep validation"
+    )
+
+
+def test_write_mosfet_id_vds_netlists_creates_one_file_per_vgs(tmp_path) -> None:  # type: ignore[no-untyped-def]
+    parameters = MosfetLevel1Parameters(vth_v=1.0, beta_a_per_v2=0.001)
+
+    results = write_mosfet_id_vds_netlists(
+        tmp_path,
+        parameters,
+        fixed_vgs_values_v=(2.5, 4.5),
+    )
+
+    assert len(results) == 2
+    assert all(path.exists() for path in results)
+    assert "Vgs gate 0 2.5" in results[0].read_text(encoding="utf-8")
+    assert "Vgs gate 0 4.5" in results[1].read_text(encoding="utf-8")

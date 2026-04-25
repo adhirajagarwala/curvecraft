@@ -42,14 +42,37 @@ def mosfet_level1_current(
     temperature dependence, velocity saturation, and other effects captured by
     production compact models such as BSIM.
     """
-    scalar_input = np.isscalar(vgs_v)
-    vgs = np.asarray(vgs_v, dtype=float)
+    return mosfet_level1_id_vds_current(vgs_v, parameters.vds_v, parameters)
+
+
+def mosfet_level1_id_vds_current(
+    vgs_v: np.ndarray | float,
+    vds_v: np.ndarray | float,
+    parameters: MosfetLevel1Parameters,
+) -> np.ndarray | float:
+    """Evaluate n-channel enhancement MOSFET drain current for Id-Vds data.
+
+    This paired-input evaluator uses the same educational Level-1 / square-law
+    equations as the M2 Id-Vgs helper, but accepts both ``vgs_v`` and ``vds_v``.
+    It models only nonnegative-drain-voltage nMOS output curves. It ignores
+    subthreshold conduction, body effect, capacitance, gate charge, temperature
+    dependence, velocity saturation, self-heating, and BSIM-level behavior.
+    """
+    scalar_input = np.isscalar(vgs_v) and np.isscalar(vds_v)
+    vgs, vds = np.broadcast_arrays(
+        np.asarray(vgs_v, dtype=float),
+        np.asarray(vds_v, dtype=float),
+    )
+    if np.any(~np.isfinite(vgs)) or np.any(~np.isfinite(vds)):
+        raise ValueError("vgs_v and vds_v must contain only finite values.")
+    if np.any(vds < 0):
+        raise ValueError("vds_v must be nonnegative for this n-channel model.")
+
     overdrive = vgs - parameters.vth_v
-    current = np.zeros_like(vgs, dtype=float)
+    current = np.zeros_like(overdrive, dtype=float)
 
     conducting = overdrive > 0
     if np.any(conducting):
-        vds = parameters.vds_v
         beta = parameters.beta_a_per_v2
         modulation = 1.0 + parameters.lambda_1_per_v * vds
         triode = conducting & (vds < overdrive)
@@ -57,13 +80,17 @@ def mosfet_level1_current(
 
         current[triode] = (
             beta
-            * (overdrive[triode] * vds - 0.5 * vds**2)
-            * modulation
+            * (overdrive[triode] * vds[triode] - 0.5 * vds[triode] ** 2)
+            * modulation[triode]
         )
         current[saturation] = (
-            0.5 * beta * overdrive[saturation] ** 2 * modulation
+            0.5
+            * beta
+            * overdrive[saturation] ** 2
+            * modulation[saturation]
         )
 
+    current = np.maximum(current, 0.0)
     if scalar_input:
         return float(current)
     return current

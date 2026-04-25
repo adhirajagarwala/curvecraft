@@ -1,0 +1,8 @@
+* CurveCraft MOSFET Id-Vds DC sweep validation
+Vds drain 0 0
+Vgs gate 0 3
+M1 drain gate 0 0 curve_nmos W=1 L=1
+.model curve_nmos NMOS (LEVEL=1 VTO=1.00000545144 KP=0.000999994233855 LAMBDA=7.24592384414e-06)
+.dc Vds 0 2 0.5
+.print dc v(drain) i(Vds)
+.end

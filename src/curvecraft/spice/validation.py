@@ -13,13 +13,20 @@ from curvecraft.models import (
     MosfetLevel1Parameters,
     diode_current,
     mosfet_level1_current,
+    mosfet_level1_id_vds_current,
 )
-from curvecraft.plotting import plot_mosfet_id_vgs_linear, plot_python_vs_ngspice
+from curvecraft.plotting import (
+    plot_mosfet_id_vds_measured_vs_fit,
+    plot_mosfet_id_vgs_linear,
+    plot_python_vs_ngspice,
+)
 from curvecraft.spice.netlist_writer import (
     write_diode_netlist,
+    write_mosfet_id_vds_netlist,
     write_mosfet_id_vgs_netlist,
 )
 from curvecraft.spice.ngspice_parser import (
+    parse_mosfet_id_vds_ngspice_output_file,
     parse_mosfet_id_vgs_ngspice_output_file,
     parse_ngspice_dc_output_file,
 )
@@ -241,4 +248,121 @@ def validate_mosfet_id_vgs_with_ngspice(
         metrics=validation.metrics,
         plot_path=validation.plot_path,
         ngspice_run=run_result,
+    )
+
+
+def validate_mosfet_id_vds_against_ngspice_results(
+    parameters: MosfetLevel1Parameters,
+    ngspice_results: pd.DataFrame,
+    *,
+    plot_path: str | PathLike[str] | None = None,
+) -> SpiceValidationResult:
+    """Compare Python MOSFET Id-Vds current against parsed ngspice results."""
+    required_columns = {"vgs_v", "vds_v", "id_a"}
+    missing = required_columns.difference(ngspice_results.columns)
+    if missing:
+        raise ValueError(
+            "MOSFET Id-Vds ngspice results missing required column(s): "
+            f"{sorted(missing)}"
+        )
+
+    comparison = ngspice_results.loc[:, ["vgs_v", "vds_v", "id_a"]].copy()
+    comparison = comparison.sort_values(["vgs_v", "vds_v"]).reset_index(drop=True)
+    comparison["python_current_a"] = mosfet_level1_id_vds_current(
+        comparison["vgs_v"].to_numpy(dtype=float),
+        comparison["vds_v"].to_numpy(dtype=float),
+        parameters,
+    )
+    comparison = comparison.rename(columns={"id_a": "ngspice_current_a"})
+    comparison["current_difference_a"] = (
+        comparison["python_current_a"] - comparison["ngspice_current_a"]
+    )
+
+    log_rmse: float | None
+    if np.any(
+        (comparison["python_current_a"].to_numpy() > 0)
+        & (comparison["ngspice_current_a"].to_numpy() > 0)
+    ):
+        log_rmse = rmse_log10_current(
+            comparison["ngspice_current_a"].to_numpy(),
+            comparison["python_current_a"].to_numpy(),
+        )
+    else:
+        log_rmse = None
+
+    metrics = SpiceValidationMetrics(
+        max_abs_current_difference_a=float(
+            np.max(np.abs(comparison["current_difference_a"].to_numpy()))
+        ),
+        rmse_current_difference_a=rmse_current(
+            comparison["ngspice_current_a"].to_numpy(),
+            comparison["python_current_a"].to_numpy(),
+        ),
+        rmse_log10_current_difference=log_rmse,
+    )
+
+    saved_plot: Path | None = None
+    if plot_path is not None:
+        plot_data = comparison.rename(columns={"ngspice_current_a": "id_a"})
+        saved_plot = plot_mosfet_id_vds_measured_vs_fit(
+            plot_data.loc[:, ["vgs_v", "vds_v", "id_a"]],
+            comparison["python_current_a"].to_numpy(dtype=float),
+            plot_path,
+        )
+
+    return SpiceValidationResult(
+        comparison=comparison,
+        metrics=metrics,
+        plot_path=saved_plot,
+    )
+
+
+def validate_mosfet_id_vds_with_ngspice(
+    parameters: MosfetLevel1Parameters,
+    work_dir: str | PathLike[str],
+    *,
+    fixed_vgs_values_v: list[float] | tuple[float, ...],
+    start_v: float = 0.0,
+    stop_v: float = 5.0,
+    step_v: float = 0.05,
+    plot_path: str | PathLike[str] | None = None,
+) -> SpiceValidationResult:
+    """Generate Id-Vds netlists, run ngspice per Vgs, parse, and compare."""
+    if not fixed_vgs_values_v:
+        raise ValueError("fixed_vgs_values_v must contain at least one value.")
+    output_dir = Path(work_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+
+    parsed_results: list[pd.DataFrame] = []
+    run_results: list[NgspiceRunResult] = []
+    for index, fixed_vgs_v in enumerate(fixed_vgs_values_v):
+        netlist_path = write_mosfet_id_vds_netlist(
+            output_dir / f"mosfet_id_vds_validation_{index}.cir",
+            parameters,
+            fixed_vgs_v=float(fixed_vgs_v),
+            start_v=start_v,
+            stop_v=stop_v,
+            step_v=step_v,
+        )
+        output_path = output_dir / f"mosfet_id_vds_validation_{index}.out"
+        run_result = run_ngspice(netlist_path, output_path)
+        run_results.append(run_result)
+        parsed_results.append(
+            parse_mosfet_id_vds_ngspice_output_file(
+                run_result.output_path,
+                fixed_vgs_v=float(fixed_vgs_v),
+            )
+        )
+
+    parsed = pd.concat(parsed_results, ignore_index=True)
+    validation = validate_mosfet_id_vds_against_ngspice_results(
+        parameters,
+        parsed,
+        plot_path=plot_path,
+    )
+    return SpiceValidationResult(
+        comparison=validation.comparison,
+        metrics=validation.metrics,
+        plot_path=validation.plot_path,
+        ngspice_run=run_results[-1],
     )
