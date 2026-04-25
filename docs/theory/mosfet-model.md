@@ -89,9 +89,9 @@ is the saturation-region approximation. `lambda_1_per_v` gives a simple
 channel-length-modulation term, so saturation-region current can still increase
 with `vds_v` when lambda is positive.
 
-The M3 evaluator is for nonnegative-drain-voltage n-channel output curves. It
-does not add fitting, Rds_on extraction, plotting, SPICE validation, reports,
-or a CLI demo in this issue.
+The M3 evaluator is for nonnegative-drain-voltage n-channel output curves and
+is used by the completed M3 fitting, plotting, ngspice validation, and report
+workflow.
 
 M3 remains a simplified Level-1 model, not BSIM. It does not add p-channel
 devices, capacitance, gate charge, switching loss, thermal modeling, or
