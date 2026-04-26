@@ -38,9 +38,17 @@ How well does a simple Level-1 n-channel MOSFET model fit these Id-Vds output cu
 
 - Plot: [`mosfet_id_vds_family.png`](mosfet_id_vds_family.png)
 - Plot: [`mosfet_id_vds_fit.png`](mosfet_id_vds_fit.png)
+- Python-vs-ngspice plot: [`mosfet_id_vds_python_vs_ngspice.png`](mosfet_id_vds_python_vs_ngspice.png)
 - SPICE netlist: [`mosfet_id_vds_vgs_0_1.cir`](mosfet_id_vds_vgs_0_1.cir)
 - SPICE netlist: [`mosfet_id_vds_vgs_1_2.cir`](mosfet_id_vds_vgs_1_2.cir)
 - SPICE netlist: [`mosfet_id_vds_vgs_2_3.cir`](mosfet_id_vds_vgs_2_3.cir)
+- Validation netlist: [`mosfet_id_vds_validation_0.cir`](mosfet_id_vds_validation_0.cir)
+- Validation netlist: [`mosfet_id_vds_validation_1.cir`](mosfet_id_vds_validation_1.cir)
+- Validation netlist: [`mosfet_id_vds_validation_2.cir`](mosfet_id_vds_validation_2.cir)
+- ngspice output: [`mosfet_id_vds_validation_0.out`](mosfet_id_vds_validation_0.out)
+- ngspice output: [`mosfet_id_vds_validation_1.out`](mosfet_id_vds_validation_1.out)
+- ngspice output: [`mosfet_id_vds_validation_2.out`](mosfet_id_vds_validation_2.out)
+- Validation comparison CSV: [`mosfet_id_vds_ngspice_validation_comparison.csv`](mosfet_id_vds_ngspice_validation_comparison.csv)
 
 ## ngspice Validation
 
@@ -50,7 +58,12 @@ How well does a simple Level-1 n-channel MOSFET model fit these Id-Vds output cu
 
 ## Interpretation
 
-This report summarizes a simple Level-1 MOSFET output-curve fit and low-Vds Rds_on extraction. Interpret the fitted parameters and Rds_on values only over the measured Vgs/Vds range and under the fixed assumptions represented by the CSV.
+This report summarizes a simple Level-1 MOSFET output-curve fit and low-Vds
+Rds_on extraction from the source Id-Vds data. The fitted Python model output
+and generated ngspice validation artifacts are separate checks of the same
+simplified model implementation. Interpret the fitted parameters and Rds_on
+values only over the measured Vgs/Vds range and under the fixed assumptions
+represented by the CSV.
 
 ## Limitations
 

@@ -43,6 +43,9 @@ I = Is * (exp((V - I * Rs) / (n * Vt)) - 1)
 - Plot: [`diode_fit_linear.png`](diode_fit_linear.png)
 - Plot: [`diode_fit_semilog.png`](diode_fit_semilog.png)
 - SPICE netlist: [`diode_validation.cir`](diode_validation.cir)
+- ngspice output: [`diode_validation.out`](diode_validation.out)
+- Validation comparison CSV: [`ngspice_validation_comparison.csv`](ngspice_validation_comparison.csv)
+- Python-vs-ngspice plot: [`python_vs_ngspice.png`](python_vs_ngspice.png)
 
 ## ngspice Validation
 
@@ -52,7 +55,11 @@ I = Is * (exp((V - I * Rs) / (n * Vt)) - 1)
 
 ## Interpretation
 
-This report summarizes a compact diode fit for the provided I-V data. The fitted parameters should be interpreted within the measured voltage/current range and the fixed-temperature M1 assumption.
+This report summarizes a compact diode fit for the provided source I-V data.
+The fitted Python model output and generated ngspice validation artifacts are
+separate checks of the same simplified model implementation. The fitted
+parameters should be interpreted within the measured voltage/current range and
+the fixed-temperature M1 assumption.
 
 ## Limitations
 

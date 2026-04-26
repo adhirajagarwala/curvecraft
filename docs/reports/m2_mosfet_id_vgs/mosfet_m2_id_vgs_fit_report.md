@@ -47,6 +47,9 @@ Id = 0.5 * beta * Vov^2 * (1 + lambda * Vds), otherwise
 - Plot: [`mosfet_id_vgs_fit_linear.png`](mosfet_id_vgs_fit_linear.png)
 - Plot: [`mosfet_id_vgs_fit_semilog.png`](mosfet_id_vgs_fit_semilog.png)
 - SPICE netlist: [`mosfet_id_vgs_validation.cir`](mosfet_id_vgs_validation.cir)
+- ngspice output: [`mosfet_id_vgs_validation.out`](mosfet_id_vgs_validation.out)
+- Validation comparison CSV: [`mosfet_ngspice_validation_comparison.csv`](mosfet_ngspice_validation_comparison.csv)
+- Python-vs-ngspice plot: [`mosfet_python_vs_ngspice.png`](mosfet_python_vs_ngspice.png)
 
 ## ngspice Validation
 
@@ -56,7 +59,11 @@ Id = 0.5 * beta * Vov^2 * (1 + lambda * Vds), otherwise
 
 ## Interpretation
 
-This report records a simple Level-1 MOSFET transfer-curve fit. Read the fitted Vth and beta inside the measured Vgs range and at the fixed Vds used for this run.
+This report records a simple Level-1 MOSFET transfer-curve fit from the source
+Id-Vgs data. The fitted Python model output and generated ngspice validation
+artifacts are separate checks of the same simplified model implementation. Read
+the fitted Vth and beta inside the measured Vgs range and at the fixed Vds used
+for this run.
 
 ## Limitations
 
