@@ -1,6 +1,7 @@
 """Educational Level-1 MOSFET Id-Vgs equations."""
 
 from dataclasses import dataclass
+from typing import cast
 
 import numpy as np
 
@@ -90,7 +91,7 @@ def mosfet_level1_id_vds_current(
             * modulation[saturation]
         )
 
-    current = np.maximum(current, 0.0)
+    current = cast(np.ndarray, np.maximum(current, 0.0))
     if scalar_input:
         return float(current)
     return current
