@@ -1,5 +1,7 @@
 # CurveCraft
 
+[![CI](https://github.com/adhirajagarwala/curvecraft/actions/workflows/ci.yml/badge.svg)](https://github.com/adhirajagarwala/curvecraft/actions/workflows/ci.yml)
+
 CurveCraft is a Python package for fitting compact semiconductor models from
 curve data, validating generated models in ngspice, and producing engineering
 reports.
