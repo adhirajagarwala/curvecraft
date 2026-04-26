@@ -59,6 +59,7 @@ The demos can also be run without arguments to write into the corresponding
 | Category | Links |
 | --- | --- |
 | Reports | [M1 diode](docs/reports/m1_diode_basic/diode_m1_fit_report.md), [M2 MOSFET Id-Vgs](docs/reports/m2_mosfet_id_vgs/mosfet_m2_id_vgs_fit_report.md), [M3 MOSFET Id-Vds / Rds_on](docs/reports/m3_mosfet_id_vds/mosfet_m3_id_vds_rdson_report.md) |
+| Documentation index | [Docs index and artifact map](docs/README.md) |
 | Engineering logs | [Project start](docs/logs/0001-project-start.md), [M1 verification](docs/logs/0002-m1-verification.md), [M2 log](docs/logs/2026-04-25-mosfet-id-vgs-fitting.md), [M3 log](docs/logs/2026-04-25-mosfet-id-vds-rdson.md) |
 | Examples | [Diode](examples/diode_basic/README.md), [MOSFET Id-Vgs](examples/mosfet_id_vgs/README.md), [MOSFET Id-Vds](examples/mosfet_id_vds/README.md), [CSV data](data/examples/) |
 | Theory docs | [Diode model](docs/theory/diode-model.md), [diode data schema](docs/theory/diode-data-schema.md), [MOSFET model](docs/theory/mosfet-model.md), [MOSFET Id-Vgs schema](docs/theory/mosfet-data-schema.md), [threshold extraction](docs/theory/mosfet-threshold-extraction.md), [MOSFET Id-Vds schema](docs/theory/mosfet-id-vds-data-schema.md), [Id-Vds fitting](docs/theory/mosfet-id-vds-fitting.md), [Rds_on extraction](docs/theory/rdson-extraction.md), [SPICE validation](docs/theory/spice-validation.md) |
