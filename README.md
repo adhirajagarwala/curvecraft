@@ -15,7 +15,9 @@ writing reproducible engineering reports.
 | M3 | Complete | nMOS Id-Vds fitting + Rds_on extraction |
 | M4 | In progress | Portfolio polish and release readiness |
 
-Latest completed release tag: `v0.3.0-mosfet-id-vds-rdson`.
+Latest completed release tag: `v0.3.0-mosfet-id-vds-rdson`. See the
+[changelog](CHANGELOG.md) and
+[v0.3.0 release notes](docs/releases/v0.3.0-mosfet-id-vds-rdson.md).
 
 ## Milestones At A Glance
 
