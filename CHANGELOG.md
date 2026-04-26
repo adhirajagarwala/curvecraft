@@ -6,9 +6,13 @@ avoid production-grade model-extraction claims.
 
 ## Unreleased
 
-- M4 portfolio polish is in progress: CI, README clarity, release notes,
+- No unreleased changes.
+
+## v0.4.0-release-readiness
+
+- Completed M4 portfolio polish: CI, README clarity, release notes,
   documentation navigation, artifact links, and final release-readiness.
-- No new semiconductor modeling scope is planned for M4.
+- No new semiconductor modeling scope was added for M4.
 
 ## v0.3.0-mosfet-id-vds-rdson
 
