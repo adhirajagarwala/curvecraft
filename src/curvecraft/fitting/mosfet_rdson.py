@@ -62,6 +62,10 @@ def extract_rdson_for_curve(
 
     selected_vds = vds[selected]
     selected_current = current[selected]
+    if np.unique(selected_vds).size < 2:
+        raise ValueError(
+            "Rds_on extraction requires at least two distinct low-Vds voltages."
+        )
     fit = np.polyfit(selected_vds, selected_current, deg=1)
     conductance = float(fit[0])
     intercept = float(fit[1])

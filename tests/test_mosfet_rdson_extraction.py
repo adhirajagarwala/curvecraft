@@ -49,6 +49,14 @@ def test_extract_rdson_for_curve_rejects_nonpositive_conductance() -> None:
         extract_rdson_for_curve(vds, current, max_vds_v=0.1)
 
 
+def test_extract_rdson_for_curve_rejects_duplicate_low_vds_only() -> None:
+    vds = np.array([0.05, 0.05, 0.05])
+    current = np.array([0.001, 0.002, 0.003])
+
+    with pytest.raises(ValueError, match="two distinct low-Vds voltages"):
+        extract_rdson_for_curve(vds, current, max_vds_v=0.05)
+
+
 def test_extract_rdson_for_curve_handles_noisy_synthetic_data_reasonably() -> None:
     rng = np.random.default_rng(123)
     vds = np.linspace(0.0, 0.2, 12)
