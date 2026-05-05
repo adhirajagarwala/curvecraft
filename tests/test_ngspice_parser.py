@@ -32,6 +32,19 @@ def test_parse_ngspice_dc_output_text_rejects_output_without_rows() -> None:
         parse_ngspice_dc_output_text("No. of Data Rows : 0\n")
 
 
+def test_parse_ngspice_dc_output_text_ignores_non_index_numeric_footer() -> None:
+    text = (
+        "Index   v(anode)        i(vin)\n"
+        "0       0.000000e+00   -0.000000e+00\n"
+        "1       1.000000e-01   -1.200000e-11\n"
+        "1.5     2.0            3.0\n"
+    )
+
+    result = parse_ngspice_dc_output_text(text)
+
+    assert result["voltage_v"].tolist() == [0.0, 0.1]
+
+
 def test_parse_mosfet_id_vgs_ngspice_output_file_uses_drain_current_sign() -> None:
     fixture = (
         Path(__file__).parent / "fixtures" / "ngspice" / "mosfet_id_vgs_output.txt"

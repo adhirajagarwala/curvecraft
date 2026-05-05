@@ -25,6 +25,8 @@ def parse_ngspice_dc_output_text(
         values = _parse_numeric_fields(parts)
         if values is None:
             continue
+        if not _looks_like_ngspice_data_row(values):
+            continue
         rows.append((values[-2], current_sign * values[-1]))
 
     if not rows:
@@ -63,6 +65,8 @@ def parse_mosfet_id_vgs_ngspice_output_text(
             continue
         values = _parse_numeric_fields(parts)
         if values is None:
+            continue
+        if not _looks_like_ngspice_data_row(values):
             continue
         rows.append((values[-2], current_sign * values[-1]))
 
@@ -104,6 +108,8 @@ def parse_mosfet_id_vds_ngspice_output_text(
         values = _parse_numeric_fields(parts)
         if values is None:
             continue
+        if not _looks_like_ngspice_data_row(values):
+            continue
         rows.append((float(fixed_vgs_v), values[-2], current_sign * values[-1]))
 
     if not rows:
@@ -131,3 +137,10 @@ def _parse_numeric_fields(parts: list[str]) -> tuple[float, ...] | None:
         return tuple(float(part) for part in parts)
     except ValueError:
         return None
+
+
+def _looks_like_ngspice_data_row(values: tuple[float, ...]) -> bool:
+    if len(values) < 3:
+        return False
+    index = values[0]
+    return index >= 0 and index.is_integer()
