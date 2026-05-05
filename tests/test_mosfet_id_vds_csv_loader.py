@@ -93,6 +93,20 @@ def test_load_mosfet_id_vds_curve_csv_rejects_non_numeric_values(
         load_mosfet_id_vds_curve_csv(csv_path)
 
 
+def test_load_mosfet_id_vds_curve_csv_rejects_duplicate_required_column(
+    tmp_path: Path,
+) -> None:
+    csv_path = tmp_path / "duplicate-id.csv"
+    csv_path.write_text(
+        "vgs_v,vds_v,id_a,id_a\n"
+        "2.0,0.1,1e-6,2e-6\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate column.*id_a"):
+        load_mosfet_id_vds_curve_csv(csv_path)
+
+
 def test_load_mosfet_id_vds_curve_csv_rejects_empty_file(
     tmp_path: Path,
 ) -> None:

@@ -1,5 +1,6 @@
 """CSV loading helpers."""
 
+import csv
 from os import PathLike
 from pathlib import Path
 
@@ -21,10 +22,7 @@ def load_diode_curve_csv(path: str | PathLike[str]) -> pd.DataFrame:
     ``voltage_v`` and ``current_a``.
     """
     csv_path = Path(path)
-    try:
-        data = pd.read_csv(csv_path)
-    except EmptyDataError as error:
-        raise ValueError("Diode CSV is empty.") from error
+    data = _read_csv_with_duplicate_check(csv_path, "Diode CSV")
 
     missing_columns = [
         column for column in REQUIRED_DIODE_COLUMNS if column not in data.columns
@@ -67,10 +65,7 @@ def load_mosfet_id_vgs_curve_csv(path: str | PathLike[str]) -> pd.DataFrame:
     as numeric data. Current sign is preserved.
     """
     csv_path = Path(path)
-    try:
-        data = pd.read_csv(csv_path)
-    except EmptyDataError as error:
-        raise ValueError("MOSFET Id-Vgs CSV is empty.") from error
+    data = _read_csv_with_duplicate_check(csv_path, "MOSFET Id-Vgs CSV")
 
     missing_columns = [
         column
@@ -120,10 +115,7 @@ def load_mosfet_id_vds_curve_csv(path: str | PathLike[str]) -> pd.DataFrame:
     columns sorted by ``vgs_v`` and then ``vds_v``. Current sign is preserved.
     """
     csv_path = Path(path)
-    try:
-        data = pd.read_csv(csv_path)
-    except EmptyDataError as error:
-        raise ValueError("MOSFET Id-Vds CSV is empty.") from error
+    data = _read_csv_with_duplicate_check(csv_path, "MOSFET Id-Vds CSV")
 
     missing_columns = [
         column
@@ -198,6 +190,28 @@ def group_mosfet_id_vds_curves_by_vgs(
         float(vgs_v): curve.reset_index(drop=True)
         for vgs_v, curve in sorted_data.groupby("vgs_v", sort=True)
     }
+
+
+def _read_csv_with_duplicate_check(csv_path: Path, label: str) -> pd.DataFrame:
+    try:
+        with csv_path.open(encoding="utf-8", newline="") as csv_file:
+            header = next(csv.reader(csv_file))
+    except StopIteration as error:
+        raise ValueError(f"{label} is empty.") from error
+    except EmptyDataError as error:
+        raise ValueError(f"{label} is empty.") from error
+
+    duplicate_columns = sorted(
+        {column for column in header if header.count(column) > 1}
+    )
+    if duplicate_columns:
+        columns = ", ".join(duplicate_columns)
+        raise ValueError(f"{label} contains duplicate column name(s): {columns}.")
+
+    try:
+        return pd.read_csv(csv_path)
+    except EmptyDataError as error:
+        raise ValueError(f"{label} is empty.") from error
 
 
 def load_curve_csv(path: str | PathLike[str]) -> pd.DataFrame:

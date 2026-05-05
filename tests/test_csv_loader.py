@@ -48,6 +48,20 @@ def test_load_diode_curve_csv_rejects_non_numeric_values(tmp_path: Path) -> None
         load_diode_curve_csv(csv_path)
 
 
+def test_load_diode_curve_csv_rejects_duplicate_required_column(
+    tmp_path: Path,
+) -> None:
+    csv_path = tmp_path / "duplicate-column.csv"
+    csv_path.write_text(
+        "voltage_v,current_a,current_a\n"
+        "0.1,1e-9,2e-9\n",
+        encoding="utf-8",
+    )
+
+    with pytest.raises(ValueError, match="duplicate column.*current_a"):
+        load_diode_curve_csv(csv_path)
+
+
 def test_load_diode_curve_csv_rejects_empty_file(tmp_path: Path) -> None:
     csv_path = tmp_path / "empty.csv"
     csv_path.write_text("", encoding="utf-8")
