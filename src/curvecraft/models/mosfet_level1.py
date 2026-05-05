@@ -23,6 +23,14 @@ class MosfetLevel1Parameters:
     vds_v: float = 5.0
 
     def __post_init__(self) -> None:
+        if not np.isfinite(self.vth_v):
+            raise ValueError("vth_v must be finite.")
+        if not np.isfinite(self.beta_a_per_v2):
+            raise ValueError("beta_a_per_v2 must be finite.")
+        if not np.isfinite(self.lambda_1_per_v):
+            raise ValueError("lambda_1_per_v must be finite.")
+        if not np.isfinite(self.vds_v):
+            raise ValueError("vds_v must be finite.")
         if self.beta_a_per_v2 <= 0:
             raise ValueError("beta_a_per_v2 must be positive.")
         if self.lambda_1_per_v < 0:

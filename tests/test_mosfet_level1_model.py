@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from curvecraft.models import (
     MosfetLevel1Parameters,
@@ -33,6 +34,28 @@ def test_mosfet_level1_higher_beta_increases_current() -> None:
         2.0,
         low_beta,
     )
+
+
+def test_mosfet_level1_parameters_reject_nonfinite_values() -> None:
+    with pytest.raises(ValueError, match="vth_v must be finite"):
+        MosfetLevel1Parameters(vth_v=float("nan"), beta_a_per_v2=1e-3)
+
+    with pytest.raises(ValueError, match="beta_a_per_v2 must be finite"):
+        MosfetLevel1Parameters(vth_v=1.0, beta_a_per_v2=float("inf"))
+
+    with pytest.raises(ValueError, match="lambda_1_per_v must be finite"):
+        MosfetLevel1Parameters(
+            vth_v=1.0,
+            beta_a_per_v2=1e-3,
+            lambda_1_per_v=float("nan"),
+        )
+
+    with pytest.raises(ValueError, match="vds_v must be finite"):
+        MosfetLevel1Parameters(
+            vth_v=1.0,
+            beta_a_per_v2=1e-3,
+            vds_v=float("inf"),
+        )
 
 
 def test_mosfet_level1_higher_vth_reduces_current_at_fixed_vgs() -> None:
