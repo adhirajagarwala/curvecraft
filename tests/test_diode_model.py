@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from curvecraft.models import DiodeParameters, diode_current, thermal_voltage
 
@@ -14,6 +15,33 @@ def test_package_level_model_import() -> None:
 
 def test_thermal_voltage_near_room_temperature_value() -> None:
     np.testing.assert_allclose(thermal_voltage(300.0), 0.02585, rtol=1e-3)
+
+
+def test_thermal_voltage_rejects_nonfinite_temperature() -> None:
+    with pytest.raises(ValueError, match="temperature_k must be finite"):
+        thermal_voltage(float("nan"))
+
+
+def test_diode_parameters_reject_nonfinite_values() -> None:
+    with pytest.raises(ValueError, match="saturation_current_a must be finite"):
+        DiodeParameters(saturation_current_a=float("nan"), ideality_factor=1.5)
+
+    with pytest.raises(ValueError, match="ideality_factor must be finite"):
+        DiodeParameters(saturation_current_a=1e-12, ideality_factor=float("inf"))
+
+    with pytest.raises(ValueError, match="series_resistance_ohm must be finite"):
+        DiodeParameters(
+            saturation_current_a=1e-12,
+            ideality_factor=1.5,
+            series_resistance_ohm=float("nan"),
+        )
+
+    with pytest.raises(ValueError, match="temperature_k must be finite"):
+        DiodeParameters(
+            saturation_current_a=1e-12,
+            ideality_factor=1.5,
+            temperature_k=float("inf"),
+        )
 
 
 def test_forward_current_is_monotonic_increasing() -> None:

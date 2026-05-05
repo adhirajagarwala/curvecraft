@@ -27,6 +27,14 @@ class DiodeParameters:
     temperature_k: float = 300.0
 
     def __post_init__(self) -> None:
+        if not np.isfinite(self.saturation_current_a):
+            raise ValueError("saturation_current_a must be finite.")
+        if not np.isfinite(self.ideality_factor):
+            raise ValueError("ideality_factor must be finite.")
+        if not np.isfinite(self.series_resistance_ohm):
+            raise ValueError("series_resistance_ohm must be finite.")
+        if not np.isfinite(self.temperature_k):
+            raise ValueError("temperature_k must be finite.")
         if self.saturation_current_a <= 0:
             raise ValueError("saturation_current_a must be positive.")
         if self.ideality_factor <= 0:
@@ -39,6 +47,8 @@ class DiodeParameters:
 
 def thermal_voltage(temperature_k: float = 300.0) -> float:
     """Return thermal voltage kT/q in volts."""
+    if not np.isfinite(temperature_k):
+        raise ValueError("temperature_k must be finite.")
     if temperature_k <= 0:
         raise ValueError("temperature_k must be positive.")
     return BOLTZMANN_J_PER_K * temperature_k / ELEMENTARY_CHARGE_C
